@@ -1,0 +1,99 @@
+<!DOCTYPE HTML>
+<meta charset="UTF-8">
+<title>CSS Toggles: ARIA roles</title>
+<link rel="author" title="L. David Baron" href="https://dbaron.org/">
+<link rel="author" title="Google" href="http://www.google.com/">
+<link rel="help" href="https://tabatkins.github.io/css-toggle/">
+<link rel="help" href="https://github.com/tabatkins/css-toggle/issues/41">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support/toggle-helpers.js"></script>
+<style id="style"></style>
+
+<body>
+
+<div id="container"></div>
+<script>
+
+let aria_role_tests = [
+  // Markup to create the test assertions:
+  //   data-expected-role:  The expected aria role for this element.
+  //
+  // Helper markup to create more markup:
+  //   class=group: group the group with the toggle-group property
+  //   class=group-self: same, but with the self keyword (narrow scope)
+  //   class=root: create a test-role toggle with the toggle-root property
+  //   class=root-group: same, but with the 'group' keyword
+  //   class=trigger: toggle-trigger to activate test-role toggle
+  `
+    <div></div>
+  `,
+  `
+    <div class="root">
+      <div></div>
+    </div>
+  `,
+  `
+    <div class="root trigger" data-expected-role="checkbox"></div>
+  `,
+  // Test that ARIA attributes override the toggle inference:
+  `
+    <div class="root trigger" role="link" data-expected-role="link"></div>
+  `,
+  `
+    <div class="root">
+      <div class="trigger" data-expected-role="button"></div>
+    </div>
+  `,
+  // TODO(dbaron): Is the role getting put on the right element?
+  `
+    <div class="group">
+      <div class="root-group trigger" data-expected-role="radiogroup"></div>
+    </div>
+  `,
+];
+
+for (let t of aria_role_tests) {
+  promise_test(async function() {
+    container.innerHTML = t;
+
+    for (let e of container.querySelectorAll('.group')) {
+      e.style.toggleGroup = "test-role";
+    }
+    for (let e of container.querySelectorAll('.group-self')) {
+      e.style.toggleGroup = "test-role self";
+    }
+    for (let e of container.querySelectorAll('.root')) {
+      e.style.toggleRoot = "test-role";
+    }
+    for (let e of container.querySelectorAll('.root-group')) {
+      e.style.toggleRoot = "test-role group";
+    }
+    for (let e of container.querySelectorAll('.trigger')) {
+      e.style.toggleTrigger = "test-role";
+    }
+
+    for (let e of container.querySelectorAll('.root, .root-nogroup')) {
+      await wait_for_toggle_creation(e);
+    }
+
+    let count = 0;
+    for (let e of container.querySelectorAll("*")) {
+      if (e == container)
+        continue;
+
+      let expected_role = "generic";
+      if (e.hasAttribute("data-expected-role")) {
+        expected_role = e.getAttribute("data-expected-role");
+      }
+      ++count;
+      // NOTE:  This relies on Element.computedRole, which is an
+      // experimental feature behind the ComputedAccessibilityInfo flag
+      // in blink.
+      assert_equals(e.computedRole, expected_role, `role on ${e.tagName} element (#${count})`);
+    }
+
+  }, `aria role test: ${t}`);
+}
+
+</script>
