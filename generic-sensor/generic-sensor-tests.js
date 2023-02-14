@@ -364,32 +364,6 @@ function runGenericSensorTests(sensorName,
     sensor.stop();
   }, `${sensorName}: Test that fresh reading is fetched on start().`);
 
-//  TBD file a WPT issue: visibilityChangeWatcher times out.
-//  sensor_test(async (t, sensorProvider) => {
-//    assert_implements(sensorName in self, `${sensorName} is not supported.`);
-//    const sensor = new sensorType();
-//    const sensorWatcher = new EventWatcher(t, sensor, ["reading", "error"]);
-//    const visibilityChangeWatcher = new EventWatcher(t, document,
-//                                                     "visibilitychange");
-//    sensor.start();
-
-//    const mockSensor = await sensorProvider.getCreatedSensor(sensorName);
-//    mockSensor.setSensorReading(readings);
-
-//    await sensorWatcher.wait_for("reading");
-//    const expected = new RingBuffer(expectedReadings).next().value;
-//    assert_true(verificationFunction(expected, sensor));
-//    const cachedTimestamp1 = sensor.timestamp;
-
-//    const win = window.open('', '_blank');
-//    await visibilityChangeWatcher.wait_for("visibilitychange");
-//    const cachedTimestamp2 = sensor.timestamp;
-
-//    win.close();
-//    sensor.stop();
-//    assert_equals(cachedTimestamp1, cachedTimestamp2);
-//  }, `${sensorName}: sensor readings can not be fired on the background tab.`);
-
   sensor_test(async (t, sensorProvider) => {
     assert_implements(sensorName in self, `${sensorName} is not supported.`);
 
